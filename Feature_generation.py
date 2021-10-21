@@ -91,7 +91,7 @@ def CKSAAGP(seq:str, gap = 5, **kw):
     encodings.append(header)
 
     for i in seq:
-        sequences = sequence[1]
+        sequences = seq[1]
         code =[]
         for g in range(gap + 1):
             gPair = generateGroupPairs(groupKey)
