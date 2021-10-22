@@ -1,13 +1,7 @@
-
+  """ Features generation from primary sequences"""
 import pandas as pd
-import re
 from typing import List, Tuple
 
-# define input sequences
-def create_dataset(data_path: str) -> Tuple[List[str], List[int]]:
-    dataset = pd.read_csv(data_path)
-    dataset = dataset.sample(frac=1).reset_index(drop=True)  # shuffle the dataset
-    return list(dataset["sequence"])
 
 # Amino acid composition
 def aac_gen(seq,option,x,y):
