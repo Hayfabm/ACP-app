@@ -1,45 +1,34 @@
-  """ Features generation from primary sequences"""
+""" Features generation from primary sequences """
 import pandas as pd
+import numpy as np
 from typing import List, Tuple
-
+from utils import create_dataset
 
 # Amino acid composition
-def aac_gen(seq,option,x,y):
+def aac_gen(seq):
     std = list("ACDEFGHIKLMNPQRSTVWY")
-    seq = seq.upper()
     aac=[]
-    if option=='Normal':
-        seq=seq
-    elif option=='N':
-        seq=seq[0:x]
-    elif option=='C':
-        seq=seq[-x:][::-1]
-    elif option=='NC':
-        seq=seq[0:x]+seq[-y:][::-1]
-    for i in std:
-        counter = seq.count(i) 
-        aac+=[((counter*1.0)/len(seq))*100]
+    i = 0
+    for i in range(len(seq)):
+        sequences= seq[i]
+        for i in std:
+            counter = sequences.count(i)
+            aac+=[((counter*1.0)/len(sequences))*100]
     return aac            
 
 
 #Dipeptide composition
-def dpc_gen(seq,option,x,y):
+def dpc_gen(seq):
     std = list("ACDEFGHIKLMNPQRSTVWY")
-    seq=seq.upper()
     dpc=[]
-    if option=='Normal':
-        seq=seq
-    elif option=='N':
-        seq=seq[0:x]
-    elif option=='C':
-        seq=seq[-x:0][::-1]
-    elif option=='NC':
-        seq=seq[0:x]+seq[-y:][::-1]
-    for j in std:
-        for k in std:
-            temp  = j+k
-            count = seq.count(temp)
-            dpc+=[((count*1.0)/(len(seq)-1))*100]
+    i = 0
+    for i in range(len(seq)):
+        sequences = seq[i]
+        for j in std:
+            for k in std:
+                temp  = j+k
+                count = sequences.count(temp)
+                dpc+=[((count*1.0)/(len(sequences)-1))*100]
     return dpc
 
 
@@ -106,3 +95,27 @@ def CKSAAGP(seq:str, gap = 5, **kw):
         encodings.append(code)
 
     return encodings
+
+
+# output_generation (examples)
+TRAIN_SET = "datasets/train_data"
+TEST_SET = "datasets/test_data"
+
+sequences_train, labels_train = create_dataset(data_path=TRAIN_SET)
+sequences_test, labels_test = create_dataset(data_path=TEST_SET)
+
+
+AAC_Train= aac_gen(sequences_train)
+AAC_Test= aac_gen(sequences_test)
+#print (AAC_Train)
+#print (AAC_Test)
+#DPC_Train= dpc_gen(sequences_train)
+DPC_Test= dpc_gen(np.array(sequences_test))
+#print (DPC_Train)
+print (DPC_Test)
+
+#CKSAAGP_train= CKSAAGP(sequences_train)
+#CKSAAGP_test= CKSAAGP(sequences_test)
+#print (CKSAAGP_test)
+
+
