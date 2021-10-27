@@ -4,24 +4,33 @@ import numpy as np
 from typing import List, Tuple
 from utils import create_dataset
 
+
 # Amino acid composition
 def aac_gen(seq):
     std = list("ACDEFGHIKLMNPQRSTVWY")
-    aac=[]
-    i = 0
+    
+    aac = []
+    res = []
     for i in range(len(seq)):
+       
+        print("***************************",i)
+
         sequences= seq[i]
-        for i in std:
-            counter = sequences.count(i)
+        print("**********************my sequence",sequences)
+        
+        for j in std:
+            counter = sequences.count(j)
             aac+=[((counter*1.0)/len(sequences))*100]
-    return aac            
+            res = aac
+    return res
+            
+    
 
 
 #Dipeptide composition
 def dpc_gen(seq):
     std = list("ACDEFGHIKLMNPQRSTVWY")
     dpc=[]
-    i = 0
     for i in range(len(seq)):
         sequences = seq[i]
         for j in std:
@@ -105,14 +114,14 @@ sequences_train, labels_train = create_dataset(data_path=TRAIN_SET)
 sequences_test, labels_test = create_dataset(data_path=TEST_SET)
 
 
-AAC_Train= aac_gen(sequences_train)
+#AAC_Train= aac_gen(sequences_train)
 AAC_Test= aac_gen(sequences_test)
 #print (AAC_Train)
-#print (AAC_Test)
+print (AAC_Test)
 #DPC_Train= dpc_gen(sequences_train)
-DPC_Test= dpc_gen(np.array(sequences_test))
+#DPC_Test= dpc_gen(np.array(sequences_test))
 #print (DPC_Train)
-print (DPC_Test)
+#print (DPC_Test)
 
 #CKSAAGP_train= CKSAAGP(sequences_train)
 #CKSAAGP_test= CKSAAGP(sequences_test)
