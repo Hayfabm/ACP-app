@@ -22,7 +22,7 @@ def aac_gen(seq):
             counter = sequences.count(j)
             aac+=[((counter*1.0)/len(sequences))*100]
             res = aac
-    return res
+        return res
             
     
 
