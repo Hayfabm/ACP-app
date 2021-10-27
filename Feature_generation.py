@@ -3,43 +3,52 @@ import pandas as pd
 import numpy as np
 from typing import List, Tuple
 from utils import create_dataset
+from collections import Counter
 
 
-# Amino acid composition
-def aac_gen(seq):
-    std = list("ACDEFGHIKLMNPQRSTVWY")
-    
-    aac = []
-    res = []
-    for i in range(len(seq)):
-       
-        print("***************************",i)
+# Amino acid composition 
+def AAC(seq, **kw):
+	AA = 'ARNDCQEGHILKMFPSTWYV'
+	encodings = []
+	#header = ['#']
+	#for i in AA:
+		#header.append(i)
+	#encodings.append(header)
 
-        sequences= seq[i]
-        print("**********************my sequence",sequences)
-        
-        for j in std:
-            counter = sequences.count(j)
-            aac+=[((counter*1.0)/len(sequences))*100]
-            res = aac
-        return res
-            
-    
+	for i in range(len(seq)):
+		sequence = seq[i]
+		count = Counter(sequence)
+		for key in count:
+			count[key] = count[key]/len(sequence)
+		code = []
+		for aa in AA:
+			code.append(count[aa])
+		encodings.append(code)
+	return encodings
 
+# Dipeptide composition 
+def DPC(seq, **kw):
+	AA = 'ARNDCQEGHILKMFPSTWYV'
+	encodings = []
+	#diPeptides = [aa1 + aa2 for aa1 in AA for aa2 in AA]
+	#header = ['#'] + diPeptides
+	#encodings.append(header)
 
-#Dipeptide composition
-def dpc_gen(seq):
-    std = list("ACDEFGHIKLMNPQRSTVWY")
-    dpc=[]
-    for i in range(len(seq)):
-        sequences = seq[i]
-        for j in std:
-            for k in std:
-                temp  = j+k
-                count = sequences.count(temp)
-                dpc+=[((count*1.0)/(len(sequences)-1))*100]
-    return dpc
+	AADict = {}
+	for i in range(len(AA)):
+		AADict[AA[i]] = i
 
+	for i in range(len(seq)):
+		sequence = seq[i]
+		code = []
+		tmpCode = [0] * 400
+		for j in range(len(sequence) - 2 + 1):
+			tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] = tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] +1
+		if sum(tmpCode) != 0:
+			tmpCode = [i/sum(tmpCode) for i in tmpCode]
+		code = code + tmpCode
+		encodings.append(code)
+	return encodings
 
 # Physicochemical propreties classification 
 def generateGroupPairs(groupKey):
@@ -77,13 +86,13 @@ def CKSAAGP(seq:str, gap = 5, **kw):
 
     encodings = []
     header = ['#']
-    for g in range(gap + 1):
-        for p in gPairIndex:
-            header.append(p+'.gap'+str(g))
-    encodings.append(header)
+    #for g in range(gap + 1):
+        #for p in gPairIndex:
+            #header.append(p+'.gap'+str(g))
+    #encodings.append(header)
 
-    for i in seq:
-        sequences = seq[1]
+    for i in range(len(seq)):
+        sequences = seq[i]
         code =[]
         for g in range(gap + 1):
             gPair = generateGroupPairs(groupKey)
@@ -104,27 +113,5 @@ def CKSAAGP(seq:str, gap = 5, **kw):
         encodings.append(code)
 
     return encodings
-
-
-# output_generation (examples)
-TRAIN_SET = "datasets/train_data"
-TEST_SET = "datasets/test_data"
-
-sequences_train, labels_train = create_dataset(data_path=TRAIN_SET)
-sequences_test, labels_test = create_dataset(data_path=TEST_SET)
-
-
-#AAC_Train= aac_gen(sequences_train)
-AAC_Test= aac_gen(sequences_test)
-#print (AAC_Train)
-print (AAC_Test)
-#DPC_Train= dpc_gen(sequences_train)
-#DPC_Test= dpc_gen(np.array(sequences_test))
-#print (DPC_Train)
-#print (DPC_Test)
-
-#CKSAAGP_train= CKSAAGP(sequences_train)
-#CKSAAGP_test= CKSAAGP(sequences_test)
-#print (CKSAAGP_test)
 
 
