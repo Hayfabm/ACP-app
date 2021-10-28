@@ -6,7 +6,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import(
-    Activation,
     InputLayer,
     Dense,
     Dropout,
@@ -129,10 +128,10 @@ if __name__ == "__main__":
     # encode labels
     labels_train_encoded = to_categorical(
         labels_train, num_classes=2, dtype="float32"
-    )  # (14189, 2)
+    )  # (1378, 2)
     labels_test_encoded = to_categorical(
         labels_test, num_classes=2, dtype="float32"
-    )  # (2272, 2)
+    )  # (344, 2)
 
     # build model
     model = build_model(EMBEDDING_SIZE, POOL_LENGTH)
