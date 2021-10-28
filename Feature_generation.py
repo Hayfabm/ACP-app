@@ -1,56 +1,56 @@
 """ Features generation from primary sequences """
-import pandas as pd
-import numpy as np
+
 from typing import List, Tuple
-from utils import create_dataset
 from collections import Counter
 
 
-# Amino acid composition 
+# Amino acid composition
 def AAC(seq, **kw):
-	AA = 'ARNDCQEGHILKMFPSTWYV'
-	encodings = []
-	#header = ['#']
-	#for i in AA:
-		#header.append(i)
-	#encodings.append(header)
+    AA = 'ARNDCQEGHILKMFPSTWYV'
+    encodings = []
+    #header = ['#']
+    #for i in AA:
+    	#header.append(i)
+    #encodings.append(header)
 
-	for i in range(len(seq)):
-		sequence = seq[i]
-		count = Counter(sequence)
-		for key in count:
-			count[key] = count[key]/len(sequence)
-		code = []
-		for aa in AA:
-			code.append(count[aa])
-		encodings.append(code)
-	return encodings
+    for i in range(len(seq)):
+        sequence = seq[i]
+        count = Counter(sequence)
+        for key in count:
+            count[key] = count[key]/len(sequence)
+        code = []
+        for aa in AA:
+            code.append(count[aa])
+        encodings.append(code)
+    return encodings
 
-# Dipeptide composition 
+
+# Dipeptide composition
 def DPC(seq, **kw):
-	AA = 'ARNDCQEGHILKMFPSTWYV'
-	encodings = []
+    AA = 'ARNDCQEGHILKMFPSTWYV'
+    encodings = []
 	#diPeptides = [aa1 + aa2 for aa1 in AA for aa2 in AA]
 	#header = ['#'] + diPeptides
 	#encodings.append(header)
 
-	AADict = {}
-	for i in range(len(AA)):
-		AADict[AA[i]] = i
-
+    AADict = {}
+    for i in range(len(AA)):
+        AADict[AA[i]] = i
 	for i in range(len(seq)):
-		sequence = seq[i]
+        sequence = seq[i]
 		code = []
 		tmpCode = [0] * 400
 		for j in range(len(sequence) - 2 + 1):
-			tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] = tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] +1
+			tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]
+            ] = tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j + 1]]] + 1
 		if sum(tmpCode) != 0:
 			tmpCode = [i/sum(tmpCode) for i in tmpCode]
 		code = code + tmpCode
 		encodings.append(code)
 	return encodings
 
-# Physicochemical propreties classification 
+
+# Physicochemical propreties classification
 def generateGroupPairs(groupKey):
     gPair = {}
     for key1 in groupKey:
@@ -59,9 +59,7 @@ def generateGroupPairs(groupKey):
     return gPair
 
 
-
-def CKSAAGP(seq:str, gap = 5, **kw):
-
+def CKSAAGP(seq: str, gap=5, **kw):
     group = {
         'alphaticr': 'GAVLMI',
         'aromatic': 'FYW',
@@ -93,14 +91,15 @@ def CKSAAGP(seq:str, gap = 5, **kw):
 
     for i in range(len(seq)):
         sequences = seq[i]
-        code =[]
+        code = []
         for g in range(gap + 1):
             gPair = generateGroupPairs(groupKey)
             sum = 0
             for p1 in range(len(sequences)):
                 p2 = p1 + g + 1
                 if p2 < len(sequences) and sequences[p1] in AA and sequences[p2] in AA:
-                    gPair[index[sequences[p1]]+'.'+index[sequences[p2]]] = gPair[index[sequences[p1]]+'.'+index[sequences[p2]]] + 1 
+                    gPair[index[sequences[p1]]+'.'+index[sequences[p2]]
+                    ] = gPair[index[sequences[p1]]+'.'+index[sequences[p2]]] + 1
                     sum = sum + 1
 
             if sum == 0:
@@ -113,5 +112,3 @@ def CKSAAGP(seq:str, gap = 5, **kw):
         encodings.append(code)
 
     return encodings
-
-
