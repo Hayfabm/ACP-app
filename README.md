@@ -3,9 +3,9 @@ deepchain.bio ACP Design
 
 ## Install ACP conda environment 
 
-From the root of this repo, run conda env create -f environment.yaml
+From the root of this repo, ```run conda env create -f environment.yaml```
 
-Follow this[tutorial](https://docs.neptune.ai/integrations-and-supported-tools/model-training/tensorflow-keras#step-5-monitor-your-tensorflow-keras-training-in-neptune) to make neptune logger works
+Follow this [tutorial](https://docs.neptune.ai/integrations-and-supported-tools/model-training/tensorflow-keras#step-5-monitor-your-tensorflow-keras-training-in-neptune) to make neptune logger works
 
 ## Overview 
 
