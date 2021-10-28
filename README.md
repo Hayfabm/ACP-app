@@ -17,18 +17,20 @@ The embedding of a an object is a representation of the object in a lower dimens
 
 You can choose a backend and pass a list of sequences of Amino acids to compute the embeddings. By default, the compute_embeddings function returns the <CLS> token embeddings. You can add a pool_mode in addition, so you can compute the mean of the tokens embeddings.
 
-from biotransformers import BioTransformers#1
+...
+from biotransformers import BioTransformers
 
-sequences = [#1
-        "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG",#1
-        "KALTARQQEVFDLIRDHISQTGMPPTRAEIAQRLGFRSPNAAEEHLKALARKGVIEIVSGASRGIRLLQEE",#1
-    ]#1
+sequences = [
+        "MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG",
+        "KALTARQQEVFDLIRDHISQTGMPPTRAEIAQRLGFRSPNAAEEHLKALARKGVIEIVSGASRGIRLLQEE",
+    ]
 
-bio_trans = BioTransformers(backend="protbert")#1
-embeddings = bio_trans.compute_embeddings(sequences, pool_mode=('cls','mean'),batch_size=2)#1
+bio_trans = BioTransformers(backend="protbert")
+embeddings = bio_trans.compute_embeddings(sequences, pool_mode=('cls','mean'),batch_size=2)
 
-cls_emb = embeddings['cls']#1
-mean_emb = embeddings['mean']"1
+cls_emb = embeddings['cls']
+mean_emb = embeddings['mean']
+...
 
 
 
