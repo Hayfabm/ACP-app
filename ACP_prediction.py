@@ -61,7 +61,7 @@ class ACPApp:
 
             # forward pass throught the model
             model_output = self.model.predict(
-                [sequences_embeddings, encodding_AAC, encodding_DPC, encodding_CKSAAGP]
+                [sequences_embeddings, encoding_AAC, encoding_DPC, encoding_CKSAAGP]
             )
             prob_list = [{self.score_names()[0]: prob[1]} for prob in model_output]
 
