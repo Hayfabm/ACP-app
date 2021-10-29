@@ -12,6 +12,12 @@ def create_dataset(data_path: str) -> Tuple[List[str], List[int]]:
     dataset = dataset.sample(frac=1).reset_index(drop=True)  # shuffle the dataset
     return list(dataset["sequences"]), list(dataset["label"])
 
+
+def categorical_probas_to_classes(p):
+    return np.argmax(p, axis=1)
+
+
+
 # calculate metrics 
 def calculate_performace(test_num, pred_y, labels):
     tp = 0
@@ -37,3 +43,4 @@ def calculate_performace(test_num, pred_y, labels):
         math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)) + 1e-06
     )
     return acc, sensitivity, specificity, mcc
+
