@@ -27,7 +27,7 @@ def AAC(seq, **kw):
 
 # Dipeptide composition
 def DPC(seq, **kw):
-	AA = kw['order'] if kw['order'] != None else 'ACDEFGHIKLMNPQRSTVWY'
+	AA = 'ACDEFGHIKLMNPQRSTVWY'
 	encodings = []
 	#diPeptides = [aa1 + aa2 for aa1 in AA for aa2 in AA]
 	#header = ['#'] + diPeptides
@@ -42,7 +42,8 @@ def DPC(seq, **kw):
 		code = []
 		tmpCode = [0] * 400
 		for j in range(len(sequence) - 2 + 1):
-			tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] = tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] +1
+			tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]
+            ] = tmpCode[AADict[sequence[j]] * 20 + AADict[sequence[j+1]]] + 1
 		if sum(tmpCode) != 0:
 			tmpCode = [i/sum(tmpCode) for i in tmpCode]
 		code = code + tmpCode
