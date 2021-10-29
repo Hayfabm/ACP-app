@@ -22,7 +22,8 @@ from tensorflow.keras.callbacks import (
 )
 import neptune.new as neptune
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
-from utils import create_dataset
+from sklearn.metrics import roc_auc_score, average_precision_score
+from utils import create_dataset, categorical_probas_to_classes, calculate_performace
 from biotransformers import BioTransformers
 from Feature_generation import AAC, DPC, CKSAAGP
 
@@ -30,30 +31,30 @@ from Feature_generation import AAC, DPC, CKSAAGP
 # Model architecture
 # first input model
 input_1 = Input(shape=(1024, ))  # embedding_layer(None, 1024, )
-dense11 = Dense(128, 64, activation="relu")(input_1)
+dense11 = Dense(128, activation = "relu", name="layer1")(input_1)
 drop11 = Dropout(0.2)(dense11)
-dense12 = Dense (128, 64, activation= "relu")(drop11)
+dense12 = Dense (128, activation = "relu", name="layer2")(drop11)
 # second input model
 input_2 = Input(shape=(20,))  # AAC_encoding_layer(None, 20, )
-dense21 = Dense(128, 64, activation="relu")(input_2)
+dense21 = Dense(32, activation = "relu")(input_2)
 drop21 = Dropout(0.2)(dense21)
-dense22 = Dense (128, 64, activation= "relu")(drop21)
+dense22 = Dense (16, activation = "relu")(drop21)
 # third input model
 input_3 = Input(shape=(400,))  # DPC_encoding_layer(None, 400, )
-dense31 = Dense(128, 64, activation="relu")(input_3)
+dense31 = Dense(64, activation = "relu")(input_3)
 drop31 = Dropout(0.2)(dense31)
-dense32 = Dense (128, 64, activation= "relu")(drop31)
+dense32 = Dense (64, activation = "relu")(drop31)
 # forth input model
 input_4 = Input(shape=(150, ))  # CKSAAGP_encoding_layer(None, 150,)
-dense41 = Dense(128, 64, activation="relu")(input_4)
+dense41 = Dense(32, activation = "relu")(input_4)
 drop41 = Dropout(0.2)(dense41)
-dense42 = Dense (128, 64, activation= "relu")(drop41)
+dense42 = Dense (16, activation = "relu")(drop41)
 # merge input models
 merge = concatenate([dense12, dense22, dense32, dense42])
 # interpretation model
-hidden1 = Dense(10, activation="relu")(merge)
+hidden1 = Dense(128, activation ="relu")(merge)
 drop1 = Dropout(0.1)(hidden1)
-output = Dense(2, activation="sigmoid")(drop1)
+output = Dense(2, activation ="sigmoid")(drop1)
 model = Model(inputs=[input_1, input_2, input_3, input_4], outputs=output)
 # summarize layers
 print(model.summary())
@@ -62,6 +63,26 @@ print(model.summary())
 
 
 if __name__ == "__main__":
+
+    path = "ACP/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    Rec_A = open(path + "Model_performance.txt" , "w")
+
+    Rec_A.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+    Rec_A.write(
+        "   acc,            sensitivity,         specificity,             mcc               "
+        + "\n"
+    )
+    Rec_A.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+
     # init neptune logger
     run = neptune.init(
         project="sophiedalentour/ACP-app", tags=["embedding_layer", "feature_encoding"],
@@ -88,7 +109,7 @@ if __name__ == "__main__":
     )
     TRAIN_SET = "datasets/train_data"
     TEST_SET = "datasets/test_data"
-
+    scores = []
     # save parameters in neptune
     run["hyper-parameters"] = {
         "encoding_mode": "bio-transformers",
@@ -201,5 +222,90 @@ if __name__ == "__main__":
         ),
         callbacks=my_callbacks,
     )
+
+    #run.stop()
+
+
+    # prediction probability
+    predictions = model.predict([sequences_test_embeddings,
+                test_encoding_AAC,
+                test_encoding_DPC,
+                test_encoding_CKSAAGP,])
+    
+    y_class = categorical_probas_to_classes(predictions)
+
+    # true_y_C_C=utils.categorical_probas_to_classes(true_y_C)
+    true_y = categorical_probas_to_classes(labels_test_encoded)
+    (  
+        acc, 
+        sensitivity, 
+        specificity, 
+        mcc,
+    ) = calculate_performace(len(y_class), y_class, true_y)
+    print("======================")
+    print("======================")
+    print(
+        "\tacc='%0.4f', sn='%0.4f', sp='%0.4f', mcc='%0.4f'"
+        % (acc, sensitivity, specificity, mcc)
+    )
+    
+
+    Rec_A.write(
+        str(acc)
+        + ","
+        + str(sensitivity) 
+        + ","
+        + str(specificity)
+        + ","
+        + str(mcc)
+        + "\n"
+    )
+    scores.append(
+        [acc,  sensitivity, specificity, mcc]
+        )
+    scores = np.array(scores)
+
+    print(len(scores))
+    print(
+        "acc=%.2f%%"
+        % (np.mean(scores, axis=0)[0] * 100)
+    )
+    print(
+        "sensitivity=%.2f%%"
+        % (np.mean(scores, axis=0)[1] * 100)
+    )
+    print(
+        "specificity=%.2f%%"
+        % (np.mean(scores, axis=0)[2] * 100)
+    )
+    print(
+        "mcc=%.2f%%"
+        % (np.mean(scores, axis=0)[3] * 100)
+    )
+    
+
+    Rec_A.write(
+        "acc=%.2f%%"
+        % (np.mean(scores, axis=0)[0] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "sensitivity=%.2f%%"
+        % (np.mean(scores, axis=0)[1] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "specificity=%.2f%%"
+        % (np.mean(scores, axis=0)[2] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "mcc=%.2f%%"
+        % (np.mean(scores, axis=0)[3] * 100)
+        + "\n"
+    )
+    
+    Rec_A.close()
+    
 
     run.stop()
