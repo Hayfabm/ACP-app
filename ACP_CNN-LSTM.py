@@ -26,7 +26,7 @@ from tensorflow.keras.callbacks import (
 )
 import neptune.new as neptune
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
-from utils import create_dataset
+from utils import create_dataset, categorical_probas_to_classes, calculate_performace
 from biotransformers import BioTransformers
 from Feature_generation import AAC, DPC, CKSAAGP
 
@@ -41,7 +41,7 @@ conv11 = Convolution1D(
     kernel_initializer="random_uniform",
     name="convolution_1d_layer1",
 )(input_1)
-pool11 = MaxPooling1D(pool_size=3)(conv11)
+pool11 = MaxPooling1D(pool_size=5)(conv11)
 conv12 = Convolution1D(
     32,
     kernel_size=16,
@@ -49,36 +49,26 @@ conv12 = Convolution1D(
     kernel_initializer="random_uniform",
     name="convolution_1d_layer2",
 )(pool11)
-pool12 = MaxPooling1D(pool_size=3)(conv12)
-drop11 = Dropout(0.2)(pool12)
-lstm11 = LSTM(100, return_sequences=False, name="lstm1")(drop11)
+pool12 = MaxPooling1D(pool_size=5)(conv12)
+drop11 = Dropout(0.1)(pool12)
+lstm11 = LSTM(32, return_sequences=False, name="lstm1")(drop11)
 drop12 = Dropout(0.1)(lstm11)
 flat1 = Flatten()(pool12)
 # second input model
 input_2 = Input(shape=(20, 1))  # AAC_encoding_layer(None, 20, 1)
 conv21 = Convolution1D(16, kernel_size=4, activation="relu")(input_2)
 pool21 = MaxPooling1D(pool_size=2)(conv21)
-drop21 = Dropout(0.1)(pool21)
-conv22 = Convolution1D(16, kernel_size=4, activation="relu")(drop21)
-pool22 = MaxPooling1D(pool_size=2)(conv22)
-drop22 = Dropout(0.1)(pool22)
-flat2 = Flatten()(drop22)
+flat2 = Flatten()(pool21)
 # third input model
 input_3 = Input(shape=(400, 1))  # DPC_encoding_layer(None, 400, 1)
 conv31 = Convolution1D(32, kernel_size=16, activation="relu")(input_3)
 pool31 = MaxPooling1D(pool_size=2)(conv31)
-drop31 = Dropout(0.1)(pool31)
-conv32 = Convolution1D(16, kernel_size=4, activation="relu")(drop31)
-pool32 = MaxPooling1D(pool_size=2)(conv32)
-flat3 = Flatten()(pool32)
+flat3 = Flatten()(pool31)
 # forth input model
 input_4 = Input(shape=(150, 1))  # CKSAAGP_encoding_layer(None, 150,1)
 conv41 = Convolution1D(32, kernel_size=16, activation="relu")(input_4)
 pool41 = MaxPooling1D(pool_size=2)(conv41)
-drop41 = Dropout(0.1)(pool41)
-conv42 = Convolution1D(16, kernel_size=4, activation="relu")(drop41)
-pool42 = MaxPooling1D(pool_size=2)(conv42)
-flat4 = Flatten()(pool42)
+flat4 = Flatten()(pool41)
 # merge input models
 merge = concatenate([flat1, flat2, flat3, flat4])
 # interpretation model
@@ -93,6 +83,26 @@ print(model.summary())
 
 
 if __name__ == "__main__":
+
+    path = "ACP/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    Rec_A = open(path + "Model_performance.txt" , "w")
+
+    Rec_A.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+    Rec_A.write(
+        "   acc,            sensitivity,         specificity,             mcc               "
+        + "\n"
+    )
+    Rec_A.writelines(
+        "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        + "\n"
+    )
+
     # init neptune logger
     run = neptune.init(
         project="sophiedalentour/ACP-app", tags=["embedding_layer", "feature_encoding"],
@@ -120,6 +130,7 @@ if __name__ == "__main__":
     TRAIN_SET = "datasets/train_data"
     TEST_SET = "datasets/test_data"
 
+
     # save parameters in neptune
     run["hyper-parameters"] = {
         "encoding_mode": "bio-transformers",
@@ -131,6 +142,7 @@ if __name__ == "__main__":
         "test_set": TEST_SET,
     }
 
+    scores = []
     # create train dataset
     sequences_train, labels_train = create_dataset(data_path=TRAIN_SET)
 
@@ -252,5 +264,89 @@ if __name__ == "__main__":
         ),
         callbacks=my_callbacks,
     )
+
+    #run.stop()
+
+    # prediction probability
+    predictions = model.predict([sequences_test_embeddings,
+                test_encoding_AAC,
+                test_encoding_DPC,
+                test_encoding_CKSAAGP,])
+    
+    y_class = categorical_probas_to_classes(predictions)
+
+    # true_y_C_C=utils.categorical_probas_to_classes(true_y_C)
+    true_y = categorical_probas_to_classes(labels_test_encoded)
+    (  
+        acc, 
+        sensitivity, 
+        specificity, 
+        mcc,
+    ) = calculate_performace(len(y_class), y_class, true_y)
+    print("======================")
+    print("======================")
+    print(
+        "\tacc='%0.4f', sn='%0.4f', sp='%0.4f', mcc='%0.4f'"
+        % (acc, sensitivity, specificity, mcc)
+    )
+    
+
+    Rec_A.write(
+        str(acc)
+        + ","
+        + str(sensitivity) 
+        + ","
+        + str(specificity)
+        + ","
+        + str(mcc)
+        + "\n"
+    )
+    scores.append(
+        [acc,  sensitivity, specificity, mcc]
+        )
+    scores = np.array(scores)
+
+    print(len(scores))
+    print(
+        "acc=%.2f%%"
+        % (np.mean(scores, axis=0)[0] * 100)
+    )
+    print(
+        "sensitivity=%.2f%%"
+        % (np.mean(scores, axis=0)[1] * 100)
+    )
+    print(
+        "specificity=%.2f%%"
+        % (np.mean(scores, axis=0)[2] * 100)
+    )
+    print(
+        "mcc=%.2f%%"
+        % (np.mean(scores, axis=0)[3] * 100)
+    )
+    
+
+    Rec_A.write(
+        "acc=%.2f%%"
+        % (np.mean(scores, axis=0)[0] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "sensitivity=%.2f%%"
+        % (np.mean(scores, axis=0)[1] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "specificity=%.2f%%"
+        % (np.mean(scores, axis=0)[2] * 100)
+        + "\n"
+    )
+    Rec_A.write(
+        "mcc=%.2f%%"
+        % (np.mean(scores, axis=0)[3] * 100)
+        + "\n"
+    )
+    
+    Rec_A.close()
+    
 
     run.stop()
