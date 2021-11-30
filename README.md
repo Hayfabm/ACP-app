@@ -54,6 +54,12 @@ mean_emb = embeddings['mean']
 
 Structural and physiochemical descriptors extracted from protein sequences have been widely used to represent protein sequences and predict structural, functional, expression and interaction profiles of proteins and peptides as well as other macromolecules. Here, we used [iFeature](https://github.com/Superzchen/iFeature), a versatile Python-based toolkit for generating three numerical feature representation schemes __AAC__, __DPC__, __CKSAAGP__. 
 
+## Dataset
+
+*_train _dataset_ contains __861__ experimentally validated ACPs and __861__ non-ACPs (or AMPs) data.
+*_test_Dataset_ contains __172__ experimentally validated anticancer peptides as positive peptides and __172__ AMPs but do not show anticancer activity as negative peptides.
+
+
 
 
 
