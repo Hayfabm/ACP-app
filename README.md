@@ -56,8 +56,9 @@ Structural and physiochemical descriptors extracted from protein sequences have 
 
 ## Dataset
 
-*_train _dataset_ contains __861__ experimentally validated ACPs and __861__ non-ACPs (or AMPs) data.
-*_test_Dataset_ contains __172__ experimentally validated anticancer peptides as positive peptides and __172__ AMPs but do not show anticancer activity as negative peptides.
+* _train_dataset_ contains __861__ experimentally validated ACPs and __861__ non-ACPs (or AMPs) data.
+   
+* _test_Dataset_ contains __172__ experimentally validated anticancer peptides as positive peptides and __172__ AMPs but do not show anticancer activity as negative peptides.
 
 
 
